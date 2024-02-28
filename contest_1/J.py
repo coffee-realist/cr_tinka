@@ -1,7 +1,8 @@
-# не решена
+from math import inf
+
+
 def bin_search(left, right, _type):
-    min_delta = 1e9
-    min_mid = 1e9
+    min_delta = inf
     last_mid = -1
     answers = []
     while True:
@@ -33,25 +34,11 @@ def f(t, x):
     return s_1, s_2
 
 
-for query in range(int(input())):
+for _ in range(int(input())):
     n, m = map(int, input().split())
-    matrix = []
-    last = 0
-    for i in range(n):
-        matrix.append([last + i + 1 for i in range(m)])
-        last += m
     s_v, k_v, d_v = bin_search(1, m, 'V')
     s_h, k_h, d_h = bin_search(1, n, 'H')
     if abs(d_v) <= abs(d_h):
         print(s_v, k_v)
     else:
         print(s_h, k_h)
-'''
-5
-1 3
-4 7
-1 10
-3 3
-3 5
-
-'''
