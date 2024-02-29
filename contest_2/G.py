@@ -19,30 +19,3 @@ for _ in range(int(input())):
     else:
         print(deque_1.popleft())
     divide()
-'''
-7
-+ 1
-+ 2
--
-+ 3
-+ 4
--
--
-
-14
-+ 1
-* 2
--
--
-* 3
-+ 4
-* 5
-* 6
--
-+ 7
--
--
--
--
-
-'''

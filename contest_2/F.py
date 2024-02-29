@@ -1,4 +1,3 @@
-# не заходит на питоне, только на c++ и то надо с бубном потанцевать
 from collections import deque
 
 n = int(input())
