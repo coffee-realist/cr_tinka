@@ -15,4 +15,4 @@ for zero_ind in zeros:
                 break
         s -= d
     s += 1
-    print(s + 1, end=" ")
+    print(s + 1, end=' ')
