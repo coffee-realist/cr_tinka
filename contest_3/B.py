@@ -58,7 +58,7 @@ def build_tree(v, ind):
 
 
 n, r = map(int, input().split())
-tree = [r] + [-1] * n
+tree = [r] + [-1] * (n + 1) * 2
 lst = []
 for i in range(n):
     cur = list(map(int, input().split()))
