@@ -65,8 +65,8 @@ for _ in range(int(input())):
         else:
             treap = add(treap, (n + last_ans) % m)
     else:
-        r, ans = _next(treap, n, inf)
-        last_ans = r.key if r else ans
+        r, result = _next(treap, n, inf)
+        last_ans = r.key if r else result
         if last_ans < n or last_ans == inf:
             last_ans = -1
         print(last_ans)

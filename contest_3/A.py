@@ -25,8 +25,8 @@ tree = {0: [0, []]}
 for i in range(len(parents)):
     tree[parents[i]][-1].append(i + 1)
     tree[i + 1] = [tree[parents[i]][0] + 1, []]
-ans = []
+result = []
 for v in sorted(tree.keys()):
-    ans.append(tree[v][0])
-print(max(ans), find_diameter(0))
-print(*ans)
+    result.append(tree[v][0])
+print(max(result), find_diameter(0))
+print(*result)

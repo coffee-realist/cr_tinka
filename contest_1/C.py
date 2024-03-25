@@ -12,11 +12,11 @@ left = 1
 right = n
 mid = (left + right) // 2
 while right != left:
-    ans = query(mid)
-    if ans == '<':
+    result = query(mid)
+    if result == '<':
         right = mid - 1
         mid = (left + right) // 2 + 1
-    elif ans == '>=':
+    elif result == '>=':
         left = mid
         mid = (left + right) // 2 + 1
 print(f'! {left}')
