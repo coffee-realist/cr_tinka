@@ -1,37 +1,42 @@
-def find_longest_subanagram():
-    max_length = 0
-    min_len = min(len(lst_1), len(lst_2))
-    hash_table_1 = {}
-    hash_table_2 = {}
-    for length in range(1, min_len + 1):
-        hash_table_1[length] = {}
-        hash_table_2[length] = {}
+import sys
+import random
 
-        for i in range(len(lst_1) - length + 1):
-            subseq_hash = hash(tuple(sorted(lst_1[i:i + length])))
-            if subseq_hash in hash_table_1[length]:
-                hash_table_1[length][subseq_hash].append(i)
-            else:
-                hash_table_1[length][subseq_hash] = [i]
 
-        for i in range(len(lst_2) - length + 1):
-            subseq_hash = hash(tuple(sorted(lst_2[i:i + length])))
-            if subseq_hash in hash_table_2[length]:
-                hash_table_2[length][subseq_hash].append(i)
-            else:
-                hash_table_2[length][subseq_hash] = [i]
+def lcs():
+    mx = min(n, m)
+    while mx > 0:
+        for ind in range(n - mx + 1):
+            for j in range(m - mx + 1):
+                if (lst_1[n - ind] + lst_2[m - mx - j]) == (
+                        lst_2[m - j] + lst_1[n - mx - ind]):
+                    return mx
+        mx -= 1
+    return mx
 
-    for length in range(1, min_len + 1):
-        for hash_val in hash_table_1[length]:
-            if hash_val in hash_table_2[length]:
-                max_length = max(max_length, length)
 
-    return max_length
+def get_hash():
+    return random.randint(1, sys.maxsize)
 
 
 n = int(input())
-lst_1 = list(map(int, input().split()))
+a = list(map(int, input().split()))
 m = int(input())
-lst_2 = list(map(int, input().split()))
-result = find_longest_subanagram()
-print(result)
+b = list(map(int, input().split()))
+hashes = {a[0]: get_hash()}
+lst_1 = [0] * (n + 1)
+lst_1[1] = hashes[a[0]]
+lst_2 = [0] * (m + 1)
+for i in range(2, n + 1):
+    cur = a[i - 1]
+    if cur not in hashes:
+        hashes[cur] = get_hash()
+    lst_1[i] = lst_1[i - 1] + hashes[cur]
+if b[0] not in hashes:
+    hashes[b[0]] = get_hash()
+lst_2[1] = hashes[b[0]]
+for i in range(2, m + 1):
+    cur = b[i - 1]
+    if cur not in hashes:
+        hashes[cur] = get_hash()
+    lst_2[i] = lst_2[i - 1] + hashes[cur]
+print(lcs())

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#pragma <Ofast>
+#pragma GCC optimize("Ofast")
 
 using namespace std;
 
