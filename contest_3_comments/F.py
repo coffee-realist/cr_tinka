@@ -18,18 +18,18 @@ class TreapNode:
 
 
 def right_rotate(v):
-    v_left = v.left
-    v_left_right = v_left.right
-    v_left.right = v
-    v.left = v_left_right
+    v_left = v.cur_left
+    v_left_right = v_left.cur_right
+    v_left.cur_right = v
+    v.cur_left = v_left_right
     return v_left
 
 
 def left_rotate(v):
-    v_right = v.right
-    v_right_left = v_right.left
-    v_right.left = v
-    v.right = v_right_left
+    v_right = v.cur_right
+    v_right_left = v_right.cur_left
+    v_right.cur_left = v
+    v.cur_right = v_right_left
     return v_right
 
 
@@ -37,12 +37,12 @@ def add(root, key):
     if not root:
         return TreapNode(key)
     if root.key >= key:
-        root.left = add(root.left, key)
-        if root.priority < root.left.priority:
+        root.cur_left = add(root.cur_left, key)
+        if root.priority < root.cur_left.priority:
             root = right_rotate(root)
     else:
-        root.right = add(root.right, key)
-        if root.priority < root.right.priority:
+        root.cur_right = add(root.cur_right, key)
+        if root.priority < root.cur_right.priority:
             root = left_rotate(root)
     return root
 
@@ -53,8 +53,8 @@ def _next(root, key, min_ans):
     elif root.key == key:
         return root
     if root.key < key:
-        return _next(root.right, key, min_ans)
-    return _next(root.left, key, root.key if key < root.key < min_ans else min_ans)
+        return _next(root.cur_right, key, min_ans)
+    return _next(root.cur_left, key, root.key if key < root.key < min_ans else min_ans)
 
 
 _max = 2 ** 64
