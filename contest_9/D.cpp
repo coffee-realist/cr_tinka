@@ -1,99 +1,105 @@
+#include <cstdio>
 #include <vector>
 #include <algorithm>
-#include <iostream>
-#include <cmath>
+#include <tuple>
 #pragma GCC optimize("Ofast")
 
 using namespace std;
 
-struct LineSegment {
-    int altitude, segment_start, segment_end;
-    bool start;
+const int TREE_SIZE = 524288;
+vector<pair<int, int>> segmentTree(TREE_SIZE * 2);
+vector<int> lazyValues(TREE_SIZE * 2);
 
-    LineSegment(int alt = 0, int start_ = 0, int end_ = 0, bool st = false) :
-        altitude(alt), segment_start(start_), segment_end(end_), start(st) {}
+struct Coord {
+    int x;
+    int lowerY;
+    int upperY;
 };
 
-bool compLines(const LineSegment &a, const LineSegment &b) {
-    if (a.altitude == b.altitude) return a.start && !b.start;
-    return a.altitude < b.altitude;
+bool compareEvent(pair<Coord, int> a, pair<Coord, int> b) {
+    return (a.first.x == b.first.x) ? (a.second > b.second) : (a.first.x < b.first.x);
 }
 
-struct SegmentTree {
-    vector<int> tree, lazy;
-    int size;
+pair<int, int> buildSegmentTree(int idx, int left, int right) {
+    if (right - left == 1) {
+        segmentTree[idx].second = left;
+        return segmentTree[idx];
+    }
+    int middle = (left + right) / 2;
+    pair<int, int> leftChild = buildSegmentTree(idx * 2 + 1, left, middle);
+    pair<int, int> rightChild = buildSegmentTree(idx * 2 + 2, middle, right);
+    segmentTree[idx].second = leftChild.second;
+    return segmentTree[idx];
+}
 
-    SegmentTree(int sz) : size(sz), tree(4 * sz, 0), lazy(4 * sz, 0) {}
-
-    void propagate(int idx, int l, int r) {
-        if (lazy[idx] != 0) {
-            tree[idx] += lazy[idx];
-            if (l != r) {
-                lazy[idx * 2 + 1] += lazy[idx];
-                lazy[idx * 2 + 2] += lazy[idx];
-            }
-            lazy[idx] = 0;
+void updateLazy(int idx, int left, int right) {
+    if (lazyValues[idx]) {
+        segmentTree[idx].first += lazyValues[idx];
+        if (right - left != 1) {
+            lazyValues[idx * 2 + 1] += lazyValues[idx];
+            lazyValues[idx * 2 + 2] += lazyValues[idx];
         }
+        lazyValues[idx] = 0;
     }
+}
 
-    void update(int idx, int l, int r, int start, int end, int val) {
-        propagate(idx, l, r);
-        if (l > end || r < start) return;
-        if (l >= start && r <= end) {
-            lazy[idx] += val;
-            propagate(idx, l, r);
-            return;
-        }
-        int mid = (l + r) / 2;
-        update(idx * 2 + 1, l, mid, start, end, val);
-        update(idx * 2 + 2, mid + 1, r, start, end, val);
-        tree[idx] = max(tree[idx * 2 + 1], tree[idx * 2 + 2]);
-    }
+pair<int, int> query(int idx, int queryL, int queryR, int left, int right) {
+    updateLazy(idx, left, right);
+    if (left == queryL && right == queryR) return segmentTree[idx];
 
-    int getMax() {
-        propagate(0, 0, size - 1);
-        return tree[0];
+    if (left >= queryR || queryL >= right) return {0, queryL};
+
+    int middle = (left + right) / 2;
+    pair<int, int> leftResult = query(idx * 2 + 1, queryL, min(queryR, middle), left, middle);
+    pair<int, int> rightResult = query(idx * 2 + 2, max(middle, queryL), queryR, middle, right);
+    return (leftResult.first < rightResult.first) ? rightResult : leftResult;
+}
+
+pair<int, int> update(int idx, int value, int updateL, int updateR, int left, int right) {
+    updateLazy(idx, left, right);
+    if (left == updateL && right == updateR) {
+        lazyValues[idx] = value;
+        updateLazy(idx, left, right);
+        return segmentTree[idx];
     }
-};
+    if (left >= updateR || updateL >= right) return segmentTree[idx];
+
+    int middle = (left + right) / 2;
+    pair<int, int> leftUpdate = update(idx * 2 + 1, value, updateL, min(updateR, middle), left, middle);
+    pair<int, int> rightUpdate = update(idx * 2 + 2, value, max(middle, updateL), updateR, middle, right);
+    segmentTree[idx] = (rightUpdate.first > leftUpdate.first) ? rightUpdate : leftUpdate;
+    return segmentTree[idx];
+}
 
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-    cout.tie(NULL);
+    buildSegmentTree(0, 0, TREE_SIZE);
 
     int n;
-    cin >> n;
-    vector<LineSegment> events;
-    int OFFSET = 200000;
+    scanf("%d", &n);
+    vector<pair<Coord, int>> events;
+    events.reserve(n * 2);
 
+    const int OFFSET = 200000;
     for (int i = 0; i < n; i++) {
-        int x1, y1, x2, y2;
-        cin >> x1 >> y1 >> x2 >> y2;
-        x1 += OFFSET; x2 += OFFSET;
-        y1 += OFFSET; y2 += OFFSET;
-        events.push_back(LineSegment(y1, x1, x2, true));
-        events.push_back(LineSegment(y2, x1, x2, false));
+        int x1, lowerY, x2, upperY;
+        scanf("%d %d %d %d", &x1, &lowerY, &x2, &upperY);
+        Coord startPoint = {x1, lowerY + OFFSET, upperY + OFFSET};
+        Coord endPoint = {x2, lowerY + OFFSET, upperY + OFFSET};
+        events.push_back({startPoint, 1});
+        events.push_back({endPoint, -1});
     }
+    sort(events.begin(), events.end(), compareEvent);
 
-    sort(events.begin(), events.end(), compLines);
-
-    int TREE_SIZE = 1;
-    while (TREE_SIZE <= 2 * OFFSET) TREE_SIZE <<= 1;
-
-    SegmentTree segTree(TREE_SIZE);
-    int maxCoverage = 0, maxX = -1, maxY = -1;
-
-    for (auto &e : events) {
-        int val = (e.start ? 1 : -1);
-        segTree.update(0, 0, TREE_SIZE - 1, e.segment_start, e.segment_end, val);
-        int currentMax = segTree.getMax();
-        if (currentMax > maxCoverage) {
-            maxCoverage = currentMax;
-            maxX = e.segment_start - OFFSET;
-            maxY = e.altitude - OFFSET;
+    tuple<int, int, int> result;
+    for (auto &event : events) {
+        update(0, event.second, event.first.lowerY, event.first.upperY + 1, 0, TREE_SIZE);
+        pair<int, int> best = query(0, event.first.lowerY, event.first.upperY + 1, 0, TREE_SIZE);
+        if (best.first > get<0>(result)) {
+            result = make_tuple(best.first, event.first.x, best.second - OFFSET);
         }
     }
 
-    cout << maxCoverage << endl << maxX << ' ' << maxY << endl;
+    printf("%d\n", get<0>(result));
+    printf("%d %d\n", get<1>(result), get<2>(result));
     return 0;
 }
